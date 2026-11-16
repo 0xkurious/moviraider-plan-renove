@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="seq_dgt_case" model="ir.sequence">
+        <field name="name">Expediente DGT</field>
+        <field name="code">dgt.case</field>
+        <field name="prefix">DGT/%(year)s/</field>
+        <field name="padding">5</field>
+    </record>
+</odoo>
