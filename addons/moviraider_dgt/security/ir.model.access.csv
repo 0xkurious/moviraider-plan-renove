@@ -1,3 +1,5 @@
 id,name,model_id:id,group_id:id,perm_read,perm_write,perm_create,perm_unlink
 access_dgt_case_user,dgt.case user,model_dgt_case,sales_team.group_sale_salesman,1,1,1,0
 access_dgt_case_manager,dgt.case manager,model_dgt_case,sales_team.group_sale_manager,1,1,1,1
+access_dgt_webhook_user,dgt.webhook.event user,model_dgt_webhook_event,sales_team.group_sale_salesman,1,0,0,0
+access_dgt_webhook_manager,dgt.webhook.event manager,model_dgt_webhook_event,sales_team.group_sale_manager,1,1,1,1

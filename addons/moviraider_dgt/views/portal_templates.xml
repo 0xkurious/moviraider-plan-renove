@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="portal_dgt_case" name="Expediente DGT (portal)">
+        <t t-call="website.layout">
+            <div id="wrap" class="oe_structure"><div class="container my-5" style="max-width: 640px;">
+                <h2>Matrícula de tu patinete</h2>
+                <p class="text-muted">
+                    Expediente <strong t-out="case.name"/>
+                    <t t-if="case.scooter_id"> · <span t-out="case.scooter_id.display_name"/></t>
+                </p>
+
+                <t t-if="case.state == 'pending'">
+                    <p>Necesitamos tres datos para registrar tu patinete en la DGT. Te llevará menos de dos minutos.</p>
+                    <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
+                    <form method="post">
+                        <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                        <input t-if="token" type="hidden" name="access_token" t-att-value="token"/>
+                        <div class="mb-3">
+                            <label class="form-label" for="owner_vat">DNI / NIE del titular</label>
+                            <input class="form-control" id="owner_vat" name="owner_vat" required="required"
+                                   t-att-value="post.get('owner_vat', '')"/>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="serial_number">Nº de serie del patinete</label>
+                            <input class="form-control" id="serial_number" name="serial_number" required="required"
+                                   t-att-value="post.get('serial_number', '')"/>
+                            <div class="form-text">Lo encontrarás en la etiqueta del chasis.</div>
+                        </div>
+                        <div class="form-check mb-4">
+                            <input class="form-check-input" type="checkbox" id="consent_gestoria" name="consent_gestoria" required="required"/>
+                            <label class="form-check-label" for="consent_gestoria">
+                                Autorizo a la gestoría a realizar el registro de mi patinete en la DGT en mi nombre.
+                            </label>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Enviar datos</button>
+                    </form>
+                </t>
+                <t t-elif="case.state == 'cancel'">
+                    <div class="alert alert-secondary">Este expediente está cancelado.</div>
+                </t>
+                <t t-else="">
+                    <div class="alert alert-success" role="alert">
+                        <strong>¡Gracias!</strong> Hemos recibido tus datos. Nos ocupamos del resto del trámite.
+                    </div>
+                </t>
+            </div></div>
+        </t>
+    </template>
+</odoo>

@@ -115,3 +115,8 @@ class TestDgtCase(TransactionCase):
         case.invalidate_recordset()
         self.assertTrue(case.is_stalled)
         self.assertEqual(case.days_open, 6)
+
+    def test_new_case_has_zero_days_open(self):
+        order = self._order(self.scooter, self.pack)
+        order.action_confirm()
+        self.assertEqual(order.dgt_case_ids.days_open, 0)

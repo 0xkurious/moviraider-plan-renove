@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="dgt_webhook_event_view_list" model="ir.ui.view">
+        <field name="name">dgt.webhook.event.list</field>
+        <field name="model">dgt.webhook.event</field>
+        <field name="arch" type="xml">
+            <list decoration-danger="state == 'failed'" decoration-success="state == 'sent'">
+                <field name="create_date"/>
+                <field name="event_type"/>
+                <field name="case_id"/>
+                <field name="state" widget="badge"/>
+                <field name="attempts"/>
+                <field name="last_error"/>
+                <button name="action_retry" type="object" string="Reintentar" icon="fa-refresh"
+                        invisible="state != 'failed'"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="dgt_webhook_event_action" model="ir.actions.act_window">
+        <field name="name">Cola de webhooks</field>
+        <field name="res_model">dgt.webhook.event</field>
+        <field name="view_mode">list</field>
+    </record>
+
+    <menuitem id="menu_dgt_webhook_event" name="Cola de webhooks"
+              parent="sale.sale_order_menu" action="dgt_webhook_event_action" sequence="31"/>
+</odoo>

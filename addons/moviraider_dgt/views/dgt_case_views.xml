@@ -40,6 +40,7 @@
                             <field name="partner_id"/>
                             <field name="scooter_id"/>
                             <field name="days_open"/>
+                            <field name="portal_url" widget="CopyClipboardChar"/>
                         </group>
                         <group string="Datos del titular">
                             <field name="owner_vat" readonly="state != 'pending'"/>
