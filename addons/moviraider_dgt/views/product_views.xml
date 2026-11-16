@@ -7,10 +7,6 @@
         <field name="arch" type="xml">
             <xpath expr="//field[@name='categ_id']" position="after">
                 <field name="is_legal_pack"/>
-                <field name="is_scooter"/>
-                <field name="has_dgt_certificate" invisible="not is_scooter"/>
-                <field name="weight_kg" invisible="not is_scooter"/>
-                <field name="max_speed_kmh" invisible="not is_scooter"/>
             </xpath>
         </field>
     </record>

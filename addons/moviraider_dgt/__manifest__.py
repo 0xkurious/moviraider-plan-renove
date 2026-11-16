@@ -5,7 +5,7 @@
     "category": "Sales",
     "author": "Demo",
     "license": "LGPL-3",
-    "depends": ["sale", "portal", "website"],
+    "depends": ["moviraider_catalog", "sale", "portal", "website"],
     "data": [
         "security/ir.model.access.csv",
         "data/sequence.xml",
