@@ -1,27 +1,112 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
-    <!-- ============ Hero en la portada ============ -->
-    <template id="home_hero" inherit_id="website.homepage" name="Renove · hero de portada" priority="20">
+    <!-- ============ Estilos compartidos ============ -->
+    <template id="renove_styles" name="Renove · estilos">
+        <style>
+            .rn-orange { color: #ff5a1f; }
+            .rn-kicker { display: inline-flex; align-items: center; gap: .45rem; background: #ffe9e0; color: #ff5a1f;
+                         font-weight: 700; font-size: .72rem; letter-spacing: .08em; text-transform: uppercase;
+                         padding: .3rem .8rem; border-radius: 999px; }
+            .rn-kicker::before { content: ""; width: .45rem; height: .45rem; border-radius: 50%; background: #ff5a1f; }
+            .rn-kicker.on-dark { background: rgba(255,90,31,.16); }
+            .rn-btn { background: #ff5a1f; color: #fff !important; font-weight: 700; border: 0; border-radius: 999px;
+                      padding: .75rem 1.5rem; text-decoration: none; display: inline-block; }
+            .rn-btn:hover { background: #e24a12; }
+            .rn-btn-ghost { border: 2px solid #111; color: #111 !important; background: transparent; font-weight: 700;
+                            border-radius: 999px; padding: .65rem 1.4rem; text-decoration: none; display: inline-block; }
+            .rn-band { background: #f4f4f4; border-radius: 18px; padding: 1.5rem 1.75rem; }
+            .rn-card { border: 1px solid #e6e6e6; border-radius: 16px; background: #fff; transition: box-shadow .15s; }
+            .rn-card:hover { box-shadow: 0 8px 24px rgba(0,0,0,.08); }
+            .rn-stat { text-align: center; padding: 1.4rem 1rem; }
+            .rn-stat .n { font-size: 2.6rem; font-weight: 800; line-height: 1; color: #111; }
+            .rn-stat .l { font-size: .75rem; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; margin-top: .5rem; }
+            .rn-stat .s { font-size: .78rem; color: #777; }
+            .rn-bar { background: #111; color: #fff; text-align: center; font-size: .9rem; padding: .55rem 1rem; }
+            .rn-bar a { color: #fff; font-weight: 700; text-decoration: underline; }
+            .rn-count { border: 1px solid rgba(255,255,255,.18); border-radius: 18px; padding: 1.6rem; text-align: center;
+                        background: rgba(255,255,255,.04); }
+            .rn-count .n { font-size: 4.5rem; font-weight: 800; line-height: 1; color: #ff5a1f; }
+            .rn-step { position: relative; padding-top: .25rem; }
+            .rn-step .num { width: 2.2rem; height: 2.2rem; border-radius: 50%; background: #111; color: #fff; font-weight: 800;
+                            display: inline-flex; align-items: center; justify-content: center; margin-bottom: .75rem; }
+            .rn-card.rn-warn { border-left: 5px solid #d9382b; }
+            .rn-card.rn-good { border-left: 5px solid #1f9d55; }
+            .rn-card.rn-info { border-left: 5px solid #ff5a1f; }
+            .rn-prod img { border-radius: 12px; background: #111; width: 100%; aspect-ratio: 1; object-fit: cover; }
+            .rn-badge { position: absolute; top: .6rem; right: .6rem; background: #ff5a1f; color: #fff; font-size: .65rem;
+                        font-weight: 800; padding: .2rem .5rem; border-radius: 6px; letter-spacing: .05em; }
+        </style>
+    </template>
+
+    <!-- ============ Barra superior en todas las páginas ============ -->
+    <template id="announcement_bar" inherit_id="website.layout" name="Renove · barra superior" priority="30">
+        <xpath expr="//header" position="before">
+            <t t-set="rn_campaign" t-value="request.env['renove.campaign'].sudo().get_active()"/>
+            <t t-if="rn_campaign and request.httprequest.path != '/renove'">
+                <t t-call="moviraider_renove.renove_styles"/>
+                <div class="rn-bar">
+                    <strong class="rn-orange">PLAN RENOVE 2027</strong> · quedan <t t-out="rn_campaign.days_left"/> días ·
+                    <a href="/renove">Comprueba si tu patinete está al día →</a>
+                </div>
+            </t>
+        </xpath>
+    </template>
+
+    <!-- ============ Portada ============ -->
+    <template id="home_hero" inherit_id="website.homepage" name="Renove · portada" priority="20">
         <xpath expr="//div[@id='wrap']" position="inside">
-            <t t-set="renove_campaign" t-value="request.env['renove.campaign'].sudo().get_active()"/>
-            <section class="renove-hero text-white" style="background:#111;">
+            <t t-call="moviraider_renove.renove_styles"/>
+            <t t-set="rn_campaign" t-value="request.env['renove.campaign'].sudo().get_active()"/>
+            <t t-set="rn_products" t-value="request.env['product.template'].sudo().search([('is_scooter', '=', True), ('has_dgt_certificate', '=', True), ('website_published', '=', True)], limit=4)"/>
+
+            <section class="text-white" style="background:#111;">
                 <div class="container py-5">
-                    <div class="row align-items-center g-4">
+                    <div class="row align-items-center g-5">
                         <div class="col-lg-8">
-                            <p class="text-uppercase fw-bold mb-2" style="color:#ff5a1f;letter-spacing:.08em;">
-                                Plan Renove 2027
-                                <t t-if="renove_campaign"> · quedan <t t-out="renove_campaign.days_left"/> días</t>
-                            </p>
-                            <h1 class="display-4 fw-bold mb-3">¿Tu patinete sigue pudiendo circular?</h1>
+                            <span class="rn-kicker on-dark mb-3">Plan Renove 2027</span>
+                            <h1 class="display-4 fw-bold mb-3">¿Tu patinete <span class="rn-orange">sigue pudiendo circular?</span></h1>
                             <p class="lead mb-4" style="color:#cfcfcf;">
                                 Comprueba en diez segundos si tu modelo está al día. Si no lo está,
                                 trae tu patinete a tienda y lo revisamos gratis.
                             </p>
-                            <a href="/renove" class="btn btn-lg fw-bold px-4" style="background:#ff5a1f;color:#fff;">
-                                Comprobar mi patinete →
-                            </a>
+                            <a href="/renove" class="rn-btn btn-lg">Comprobar mi patinete →</a>
+                            <a href="#homologados" class="ms-3 text-white">Ver homologados</a>
+                        </div>
+                        <div class="col-lg-4" t-if="rn_campaign">
+                            <div class="rn-count">
+                                <div class="n"><t t-out="rn_campaign.days_left"/></div>
+                                <div class="mt-2 fw-bold">días</div>
+                                <div style="color:#aaa;font-size:.85rem;">hasta el 22 de enero de 2027</div>
+                            </div>
                         </div>
                     </div>
+                </div>
+            </section>
+
+            <section class="container py-5" id="homologados">
+                <div class="rn-band d-flex flex-wrap align-items-center justify-content-between gap-3 mb-4">
+                    <div>
+                        <span class="rn-kicker mb-2">Con certificado DGT</span>
+                        <h2 class="h2 fw-bold mb-0">Patinetes <span class="rn-orange">homologados.</span></h2>
+                    </div>
+                    <a t-att-href="'/shop'" class="rn-btn">Ver catálogo completo →</a>
+                </div>
+                <div class="row g-3">
+                    <div class="col-6 col-lg-3" t-foreach="rn_products" t-as="p">
+                        <a t-att-href="p.website_url" class="rn-card rn-prod d-block p-3 h-100 text-decoration-none text-dark position-relative">
+                            <img t-att-src="'/web/image/product.template/%s/image_512' % p.id" t-att-alt="p.name" loading="lazy"/>
+                            <div class="mt-3 fw-semibold" t-out="p.name"/>
+                            <div class="fw-bold mt-1" t-field="p.list_price" t-options="{'widget': 'monetary', 'display_currency': p.currency_id}"/>
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section class="container pb-5">
+                <div class="row g-3">
+                    <div class="col-12 col-md-4"><div class="rn-card rn-stat"><div class="n">7</div><div class="l">Tiendas</div><div class="s">donde revisamos tu patinete</div></div></div>
+                    <div class="col-12 col-md-4"><div class="rn-card rn-stat"><div class="n">0 €</div><div class="l">Revisión</div><div class="s">sin compromiso</div></div></div>
+                    <div class="col-12 col-md-4"><div class="rn-card rn-stat"><div class="n">10 s</div><div class="l">Comprobación</div><div class="s">en esta web</div></div></div>
                 </div>
             </section>
         </xpath>
@@ -30,89 +115,148 @@
     <!-- ============ Landing /renove ============ -->
     <template id="landing" name="Plan Renove · landing">
         <t t-call="website.layout">
+            <t t-call="moviraider_renove.renove_styles"/>
             <div id="wrap" class="renove-landing">
 
+                <!-- Hero con buscador -->
                 <section class="text-white" style="background:#111;">
                     <div class="container py-5">
-                        <p class="text-uppercase fw-bold mb-2" style="color:#ff5a1f;letter-spacing:.08em;">
-                            Plan Renove 2027 · quedan <t t-out="days_left"/> días
-                        </p>
-                        <h1 class="display-5 fw-bold mb-3">¿Tu patinete sigue pudiendo circular?</h1>
-                        <p class="lead mb-4" style="color:#cfcfcf;max-width:46rem;">
-                            Escribe la marca y el modelo. Te decimos si está al día y, si no, qué puedes hacer.
-                        </p>
-                        <form action="/renove" method="get" class="d-flex flex-column flex-md-row gap-2" style="max-width:46rem;">
-                            <input type="text" name="model" list="renove-models" class="form-control form-control-lg"
-                                   placeholder="Ej.: Kukirin G2 Pro" t-att-value="query" autocomplete="off"
-                                   aria-label="Marca y modelo de tu patinete"/>
-                            <datalist id="renove-models">
-                                <option t-foreach="scooters" t-as="s" t-att-value="s.name"/>
-                            </datalist>
-                            <button type="submit" class="btn btn-lg fw-bold px-4" style="background:#ff5a1f;color:#fff;">
-                                Comprobar
-                            </button>
-                        </form>
-                    </div>
-                </section>
-
-                <!-- Resultado -->
-                <section t-if="verdict" class="py-5" id="resultado">
-                    <div class="container" style="max-width:52rem;">
-                        <t t-if="verdict == 'expires'">
-                            <div class="alert alert-danger" role="alert">
-                                <h2 class="h4 alert-heading">
-                                    Tu <t t-out="template.name"/> deja de poder circular en <t t-out="days_left"/> días.
-                                </h2>
-                                <p class="mb-0">
-                                    Este modelo se vendió sin certificado de circulación. El periodo transitorio
-                                    termina el <strong>22 de enero de 2027</strong>.
+                        <div class="row align-items-center g-5">
+                            <div class="col-lg-8">
+                                <span class="rn-kicker on-dark mb-3">Plan Renove 2027</span>
+                                <h1 class="display-5 fw-bold mb-3">Tu patinete, <span class="rn-orange">¿sigue pudiendo circular?</span></h1>
+                                <p class="lead mb-4" style="color:#cfcfcf;max-width:46rem;">
+                                    Escribe la marca y el modelo. Te decimos si está al día y, si no, qué puedes hacer.
                                 </p>
+                                <form action="/renove" method="get" class="d-flex flex-column flex-md-row gap-2" style="max-width:46rem;">
+                                    <input type="text" name="model" list="renove-models" class="form-control form-control-lg"
+                                           placeholder="Ej.: Kukirin G2 Pro" t-att-value="query" autocomplete="off"
+                                           aria-label="Marca y modelo de tu patinete"/>
+                                    <datalist id="renove-models">
+                                        <option t-foreach="scooters" t-as="s" t-att-value="s.name"/>
+                                    </datalist>
+                                    <button type="submit" class="rn-btn btn-lg">Comprobar</button>
+                                </form>
                             </div>
-                        </t>
-                        <t t-elif="verdict == 'ok'">
-                            <div class="alert alert-success" role="alert">
-                                <h2 class="h4 alert-heading">Tu <t t-out="template.name"/> está al día.</h2>
-                                <p class="mb-0">Este modelo cuenta con certificado de circulación. Recuerda el registro en la DGT y el seguro obligatorio.</p>
-                            </div>
-                        </t>
-                        <t t-else="">
-                            <div class="alert alert-warning" role="alert">
-                                <h2 class="h4 alert-heading">No reconocemos ese modelo.</h2>
-                                <p class="mb-0">No pasa nada: tráelo a una tienda y lo revisamos contigo, sin compromiso.</p>
-                            </div>
-                        </t>
-
-                        <div class="row g-3 mt-2" t-if="verdict != 'ok'">
-                            <div class="col-md-6">
-                                <div class="card h-100"><div class="card-body">
-                                    <h3 class="h5">Cámbialo por uno homologado</h3>
-                                    <p>Con el código <strong t-out="discount_code or 'RENOVE27'"/> en la cesta.</p>
-                                    <a t-att-href="shop_url" class="btn btn-primary">Ver patinetes homologados</a>
-                                </div></div>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="card h-100"><div class="card-body">
-                                    <h3 class="h5">Trae tu patinete</h3>
-                                    <p>Lo revisamos gratis en tienda y te contamos tus opciones.</p>
-                                    <a href="#reserva" class="btn btn-outline-dark">Reservar visita</a>
-                                </div></div>
+                            <div class="col-lg-4">
+                                <div class="rn-count">
+                                    <div class="n"><t t-out="days_left"/></div>
+                                    <div class="mt-2 fw-bold">días</div>
+                                    <div style="color:#aaa;font-size:.85rem;">hasta el 22 de enero de 2027</div>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </section>
 
+                <!-- Resultado -->
+                <section t-if="verdict" class="py-5" id="resultado">
+                    <div class="container" style="max-width:54rem;">
+                        <t t-if="verdict == 'expires'">
+                            <div class="rn-card rn-warn p-4">
+                                <h2 class="h4 fw-bold">Tu <t t-out="template.name"/> no consta con certificado de circulación.</h2>
+                                <p class="mb-2">
+                                    Si se comercializó hasta el <strong>21 de enero de 2024</strong>, puede circular hasta el
+                                    <strong>22 de enero de 2027</strong> (te quedan <strong><t t-out="days_left"/> días</strong>),
+                                    siempre que esté inscrito en el Registro de la DGT, lleve su etiqueta y tenga seguro.
+                                </p>
+                                <p class="mb-0">Desde esa fecha, solo podrán circular los patinetes certificados.</p>
+                            </div>
+                        </t>
+                        <t t-elif="verdict == 'ok'">
+                            <div class="rn-card rn-good p-4">
+                                <h2 class="h4 fw-bold">Tu <t t-out="template.name"/> consta con certificado de circulación.</h2>
+                                <p class="mb-0">Puede seguir circulando después del 22 de enero de 2027. Recuerda mantener
+                                    la inscripción en el Registro de la DGT, la etiqueta y el seguro obligatorio.</p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="rn-card rn-info p-4">
+                                <h2 class="h4 fw-bold">No reconocemos ese modelo.</h2>
+                                <p class="mb-0">No pasa nada: tráelo a una tienda y lo revisamos contigo, sin compromiso.</p>
+                            </div>
+                        </t>
+
+                        <div class="row g-3 mt-1" t-if="verdict != 'ok'">
+                            <div class="col-md-6">
+                                <div class="rn-card h-100 p-4">
+                                    <h3 class="h5 fw-bold">Cámbialo por uno homologado</h3>
+                                    <p>Con el código <strong t-out="discount_code or 'RENOVE27'"/> en la cesta.</p>
+                                    <a t-att-href="shop_url" class="rn-btn">Ver patinetes homologados</a>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="rn-card h-100 p-4">
+                                    <h3 class="h5 fw-bold">Trae tu patinete</h3>
+                                    <p>Lo revisamos gratis en tienda y te contamos tus opciones.</p>
+                                    <a href="#reserva" class="rn-btn-ghost">Reservar visita</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Aclaración del 22 de enero -->
+                <section class="py-5" id="aclaracion" t-att-class="'py-5' if verdict else 'py-5'">
+                    <div class="container" style="max-width:64rem;">
+                        <span class="rn-kicker mb-2">Qué dice la DGT</span>
+                        <h2 class="h2 fw-bold mb-2">El 22 de enero de 2027, <span class="rn-orange">en claro.</span></h2>
+                        <p class="text-muted mb-4">Tres fechas que importan, según la información publicada por la Dirección General de Tráfico.</p>
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <div class="rn-card rn-step h-100 p-4">
+                                    <div class="num">1</div>
+                                    <h3 class="h6 fw-bold text-uppercase">Hasta el 21 de enero de 2024</h3>
+                                    <p class="mb-0">Los patinetes comercializados hasta esa fecha <strong>pueden circular sin certificado</strong> hasta el 22 de enero de 2027.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="rn-card rn-step h-100 p-4">
+                                    <div class="num">2</div>
+                                    <h3 class="h6 fw-bold text-uppercase">Desde el 22 de enero de 2024</h3>
+                                    <p class="mb-0">Solo se pueden comercializar patinetes <strong>certificados</strong>. Si compras hoy, ya cumples.</p>
+                                </div>
+                            </div>
+                            <div class="col-md-4">
+                                <div class="rn-card rn-step h-100 p-4" style="border-top:5px solid #d9382b;">
+                                    <div class="num" style="background:#d9382b;">3</div>
+                                    <h3 class="h6 fw-bold text-uppercase">A partir del 22 de enero de 2027</h3>
+                                    <p class="mb-0">Solo podrán circular los patinetes <strong>con número de certificado</strong>.</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="rn-band mt-4">
+                            <strong>Mientras tanto,</strong> un patinete sin certificado debe estar inscrito en el
+                            Registro de vehículos personales ligeros y llevar su etiqueta
+                            (se inscribe como «Vehículo no certificado»), además del seguro obligatorio.
+                            <a href="https://www.dgt.es/nuestros-servicios/tu-vehiculo/vehiculos-de-movilidad-personal-vmp/"
+                               target="_blank" rel="noopener">Fuente: DGT, Vehículos de Movilidad Personal ↗</a>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Cifras -->
+                <section class="container pb-5">
+                    <div class="row g-3">
+                        <div class="col-12 col-md-4"><div class="rn-card rn-stat"><div class="n"><t t-out="len(stores)"/></div><div class="l">Tiendas</div><div class="s">donde revisamos tu patinete</div></div></div>
+                        <div class="col-12 col-md-4"><div class="rn-card rn-stat"><div class="n">0 €</div><div class="l">Revisión</div><div class="s">sin compromiso</div></div></div>
+                        <div class="col-12 col-md-4"><div class="rn-card rn-stat"><div class="n">10 s</div><div class="l">Comprobación</div><div class="s">en esta página</div></div></div>
+                    </div>
+                </section>
+
                 <!-- Reserva de visita -->
-                <section class="py-5 bg-light" id="reserva">
+                <section class="py-5" id="reserva" style="background:#f4f4f4;">
                     <div class="container" style="max-width:40rem;">
                         <t t-if="sent">
-                            <div class="alert alert-success" role="alert">
-                                <h2 class="h4 alert-heading">¡Recibido!</h2>
+                            <div class="rn-card rn-good p-4">
+                                <h2 class="h4 fw-bold">¡Recibido!</h2>
                                 <p class="mb-0">Te avisamos para confirmar la visita a <strong t-out="form.get('store')"/>.</p>
                             </div>
                         </t>
                         <t t-else="">
-                            <h2 class="h3">Trae tu patinete</h2>
-                            <p class="text-muted">Lo revisamos gratis. Déjanos cómo avisarte.</p>
+                            <span class="rn-kicker mb-2">Trae tu patinete</span>
+                            <h2 class="h3 fw-bold">Lo revisamos <span class="rn-orange">gratis.</span></h2>
+                            <p class="text-muted">Déjanos cómo avisarte y elige tienda.</p>
                             <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
                             <form action="/renove/reserva" method="post">
                                 <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
@@ -139,26 +283,43 @@
                                         Acepto que me contacten para concertar la visita.
                                     </label>
                                 </div>
-                                <button type="submit" class="btn btn-primary">Reservar visita</button>
+                                <button type="submit" class="rn-btn">Reservar visita</button>
                             </form>
                         </t>
                     </div>
                 </section>
 
-                <!-- Información -->
+                <!-- Preguntas frecuentes -->
                 <section class="py-5">
                     <div class="container" style="max-width:52rem;">
-                        <h2 class="h3 mb-3">Qué cambia el 22 de enero de 2027</h2>
-                        <p>
-                            Los patinetes vendidos antes de 2024 sin certificado de circulación tienen un periodo
-                            transitorio. Cuando termine, solo podrán circular los que cuenten con certificado,
-                            estén registrados en la DGT y lleven su seguro de responsabilidad civil.
+                        <h2 class="h3 fw-bold mb-3">Preguntas frecuentes</h2>
+                        <div class="accordion" id="rn-faq">
+                            <div class="accordion-item">
+                                <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">¿Puedo seguir usando mi patinete hasta el 22 de enero de 2027?</button></h3>
+                                <div id="faq1" class="accordion-collapse collapse" data-bs-parent="#rn-faq"><div class="accordion-body">
+                                    Si se comercializó hasta el 21 de enero de 2024, sí, aunque no tenga certificado. Tiene que estar
+                                    inscrito en el Registro de la DGT, llevar la etiqueta identificativa y contar con el seguro obligatorio.
+                                </div></div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">¿Cómo sé si mi modelo está certificado?</button></h3>
+                                <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#rn-faq"><div class="accordion-body">
+                                    Usa el buscador de esta página con el modelo de nuestro catálogo, o consulta el listado oficial de
+                                    marcas y modelos certificados en la web de la DGT. Si no lo encuentras, tráelo y lo comprobamos contigo.
+                                </div></div>
+                            </div>
+                            <div class="accordion-item">
+                                <h3 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">¿Qué pasa a partir del 22 de enero de 2027?</button></h3>
+                                <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#rn-faq"><div class="accordion-body">
+                                    Solo podrán circular los patinetes que cuenten con número de certificado. Los que no lo tengan
+                                    dejarán de poder hacerlo.
+                                </div></div>
+                            </div>
+                        </div>
+                        <p class="small text-muted mt-4 mb-0">
+                            Página de demostración. La información sobre la normativa es orientativa y procede de la DGT;
+                            consulta siempre la fuente oficial.
                         </p>
-                        <ul>
-                            <li><strong>Con certificado:</strong> te ayudamos con el registro y la matrícula.</li>
-                            <li><strong>Sin certificado:</strong> revisamos tu caso y te proponemos un modelo homologado.</li>
-                        </ul>
-                        <p class="small text-muted mb-0">Página de demostración. Los datos legales son orientativos.</p>
                     </div>
                 </section>
             </div>

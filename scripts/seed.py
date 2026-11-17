@@ -34,7 +34,7 @@ LEGACY = [
     ("Smartgyro K2 Pro (2022)", 429, 17.0, 30, False),
     ("Dualtron Mini (2022)", 899, 23.0, 50, False),
     ("ZWheel ZRino (2023)", 579, 22.0, 35, False),
-    ("Joyor X5S (2023, con certificado)", 649, 21.5, 25, True),  # caso límite
+    ("Joyor X5S (2023)", 649, 21.5, 25, True),  # caso límite
 ]
 CURRENT = [
     ("Ecoxtrem M41 Armored Dual PRO", 847, 41.0, 25, True),

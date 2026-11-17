@@ -34,16 +34,16 @@ class TestLanding(HttpCase):
 
     def test_legacy_model_expires(self):
         res = self.url_open("/renove?model=Kukirin+G2+Pro+(2022)")
-        self.assertIn("deja de poder circular", res.text)
+        self.assertIn("no consta con certificado", res.text)
 
     def test_certified_model_is_ok(self):
         res = self.url_open("/renove?model=Ecoxtrem+M41+PRO")
-        self.assertIn("está al día", res.text)
-        self.assertNotIn("deja de poder circular", res.text)
+        self.assertIn("consta con certificado de circulación", res.text)
+        self.assertNotIn("no consta con certificado", res.text)
 
     def test_search_ignores_case_and_accents(self):
         res = self.url_open("/renove?model=kukirin+g2+pro+(2022)")
-        self.assertIn("deja de poder circular", res.text)
+        self.assertIn("no consta con certificado", res.text)
 
     def test_unknown_model_is_neutral_not_an_error(self):
         res = self.url_open("/renove?model=Marca+Inventada+9000")
@@ -87,3 +87,18 @@ class TestLanding(HttpCase):
 
     def test_homepage_shows_renove_hero(self):
         self.assertIn("Plan Renove", self.url_open("/").text)
+
+    def test_january_22_clarification_matches_dgt_and_cites_source(self):
+        text = self.url_open("/renove").text
+        self.assertIn("21 de enero de 2024", text)   # fin de la comercialización sin certificado
+        self.assertIn("22 de enero de 2027", text)   # fin del periodo transitorio
+        self.assertIn("Vehículo no certificado", text)
+        self.assertIn("dgt.es/nuestros-servicios/tu-vehiculo/vehiculos-de-movilidad-personal-vmp", text)
+
+    def test_announcement_bar_on_other_pages_but_not_on_landing(self):
+        self.assertIn("rn-bar", self.url_open("/shop").text)
+        self.assertNotIn('class="rn-bar"', self.url_open("/renove").text)
+
+    def test_homepage_lists_certified_scooters(self):
+        self.modern.product_tmpl_id.write({"is_published": True, "website_published": True})
+        self.assertIn("Ecoxtrem M41 PRO", self.url_open("/").text)
