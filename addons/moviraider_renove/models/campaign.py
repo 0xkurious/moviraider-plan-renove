@@ -10,9 +10,10 @@ class RenoveCampaign(models.Model):
     _description = "Campaña Renove"
     _inherit = ["mail.thread"]
 
-    name = fields.Char(required=True, default="Plan Renove 2027", tracking=True)
+    name = fields.Char(string="Nombre", required=True, default="Plan Renove 2027", tracking=True)
     state = fields.Selection(
         [("draft", "Borrador"), ("running", "En marcha"), ("done", "Finalizada")],
+        string="Estado",
         default="draft",
         tracking=True,
     )
@@ -23,24 +24,25 @@ class RenoveCampaign(models.Model):
         help="Supuesto: un patinete vendido antes de esta fecha no tiene certificado de circulación.",
     )
     deadline = fields.Date(string="Fin del periodo transitorio", default=date(2027, 1, 22), required=True)
-    days_left = fields.Integer(compute="_compute_days_left")
-    discount_code = fields.Char(default="RENOVE27")
+    days_left = fields.Integer(string="Días restantes", compute="_compute_days_left")
+    discount_code = fields.Char(string="Código de descuento", default="RENOVE27")
     offer_text = fields.Text(
+        string="Texto de la oferta",
         default="A partir del 22 de enero de 2027 tu patinete ya no podrá circular. "
         "Cámbialo por un modelo homologado con un descuento exclusivo de cliente.",
     )
 
-    utm_campaign_id = fields.Many2one("utm.campaign", readonly=True, copy=False)
-    mailing_id = fields.Many2one("mailing.mailing", readonly=True, copy=False)
-    line_ids = fields.One2many("renove.campaign.line", "campaign_id")
+    utm_campaign_id = fields.Many2one("utm.campaign", string="Campaña UTM", readonly=True, copy=False)
+    mailing_id = fields.Many2one("mailing.mailing", string="Correo", readonly=True, copy=False)
+    line_ids = fields.One2many("renove.campaign.line", "campaign_id", string="Clientes")
 
-    eligible_count = fields.Integer(compute="_compute_funnel")
-    no_consent_count = fields.Integer(compute="_compute_funnel")
-    no_contact_count = fields.Integer(compute="_compute_funnel")
-    renewed_count = fields.Integer(compute="_compute_funnel")
-    converted_count = fields.Integer(compute="_compute_funnel")
-    revenue = fields.Monetary(compute="_compute_funnel", currency_field="currency_id")
-    currency_id = fields.Many2one("res.currency", default=lambda s: s.env.company.currency_id)
+    eligible_count = fields.Integer(string="Contactables", compute="_compute_funnel")
+    no_consent_count = fields.Integer(string="Sin consentimiento", compute="_compute_funnel")
+    no_contact_count = fields.Integer(string="Sin vía de contacto", compute="_compute_funnel")
+    renewed_count = fields.Integer(string="Ya renovados", compute="_compute_funnel")
+    converted_count = fields.Integer(string="Han comprado", compute="_compute_funnel")
+    revenue = fields.Monetary(string="Ingresos atribuidos", compute="_compute_funnel", currency_field="currency_id")
+    currency_id = fields.Many2one("res.currency", string="Moneda", default=lambda s: s.env.company.currency_id)
 
     @api.depends("deadline")
     def _compute_days_left(self):
@@ -181,8 +183,8 @@ class RenoveCampaignLine(models.Model):
     _description = "Cliente en la campaña Renove"
     _order = "status, partner_id"
 
-    campaign_id = fields.Many2one("renove.campaign", required=True, ondelete="cascade", index=True)
-    partner_id = fields.Many2one("res.partner", required=True)
+    campaign_id = fields.Many2one("renove.campaign", string="Campaña", required=True, ondelete="cascade", index=True)
+    partner_id = fields.Many2one("res.partner", string="Cliente", required=True)
     status = fields.Selection(
         [
             ("eligible", "Contactable"),
@@ -190,13 +192,14 @@ class RenoveCampaignLine(models.Model):
             ("no_contact", "Sin vía de contacto"),
             ("renewed", "Ya renovado"),
         ],
+        string="Estado",
         required=True,
         index=True,
     )
     legacy_product_ids = fields.Many2many("product.product", string="Patinete(s) antiguo(s)")
     last_legacy_date = fields.Date(string="Última compra antigua")
-    email = fields.Char(related="partner_id.email")
-    converted = fields.Boolean(compute="_compute_converted")
+    email = fields.Char(related="partner_id.email", string="Email")
+    converted = fields.Boolean(string="Ha comprado", compute="_compute_converted")
 
     def _compute_converted(self):
         for line in self:

@@ -14,6 +14,13 @@ NOW = datetime(2026, 11, 16, 12, 0)
 CUTOFF = datetime(2024, 1, 22)
 
 env.user.lang = "es_ES"  # noqa: F821
+
+# ---- Marca y moneda de la demo (la empresa por defecto de Odoo es "My Company" en USD)
+eur = env.ref("base.EUR")  # noqa: F821
+eur.active = True
+env.company.write({"name": "MoviRaider (demo)", "currency_id": eur.id})  # noqa: F821
+env["product.pricelist"].search([]).write({"currency_id": eur.id})  # noqa: F821
+env["website"].search([]).write({"name": "MoviRaider (demo)"})  # noqa: F821
 P = env["product.product"]  # noqa: F821
 Partner = env["res.partner"]  # noqa: F821
 SO = env["sale.order"]  # noqa: F821
@@ -73,7 +80,7 @@ def partner(name, email=True, consent=True, idx=0):
 
 
 customers = []
-for i in range(300):
+for i in range(420):
     in_store = rnd.random() < 0.35          # compra en tienda: sin datos de contacto
     consent = (not in_store) and rnd.random() < 0.65
     customers.append(partner("%s %s" % (rnd.choice(FIRST), rnd.choice(LAST)), email=not in_store,
@@ -107,8 +114,9 @@ sale(edge["sin_email"], [legacy[3]], datetime(2023, 8, 2))
 sale(edge["sin_consent"], [legacy[4]], datetime(2022, 12, 20))
 
 # ------------------------------------------------------------------ histórico
-for _ in range(440):
-    cust = rnd.choice(customers)
+# Norma: cada cliente compró UN patinete; solo ~6 % repite (como en una tienda de este tipo,
+# donde el patinete es una compra poco frecuente).  Supuesto declarado en el README.
+def historic_order(cust):
     when = rand_date(datetime(2022, 1, 10), datetime(2026, 9, 30))
     if when < CUTOFF:
         item = rnd.choice(legacy) if rnd.random() < 0.93 else legacy[6]
@@ -116,6 +124,12 @@ for _ in range(440):
         item = rnd.choice(current)
     extras = [rnd.choice([helmet, lock])] if rnd.random() < 0.3 else []
     sale(cust, [item] + extras, when)
+
+
+for cust in customers:
+    historic_order(cust)
+for cust in rnd.sample(customers, 25):
+    historic_order(cust)
 
 # ------------------------------------------------- pedidos actuales con pack legal
 buyers = [c for c in customers if c.email]
@@ -137,6 +151,11 @@ for n, kind in enumerate(plan):
         case.action_validate()
     if kind == "sent":
         case.action_send_gestoria()
+        case.flush_recordset()
+        # cierre realista: el expediente se enviaba 1-3 días después de abrirse
+        closed = when + timedelta(days=rnd.randint(1, 3))
+        env.cr.execute("UPDATE dgt_case SET write_date=%s WHERE id=%s", (closed, case.id))  # noqa: F821
+        case.invalidate_recordset()
 
 # ------------------------------------------------------------------ campaña
 campaign = env["renove.campaign"].create({"name": "Plan Renove 2027"})  # noqa: F821
@@ -146,8 +165,8 @@ env.cr.commit()  # noqa: F821
 
 C = campaign
 print("=== SEED OK ===")
-print("clientes: %d | pedidos: %d | expedientes DGT: %d" % (
-    Partner.search_count([("email", "like", "@example.com")]) + Partner.search_count([("email", "=", False), ("marketing_consent", "!=", None)]) - 0,
+print("clientes: %d | pedidos confirmados: %d | expedientes DGT: %d" % (
+    Partner.search_count([("marketing_consent", "in", [True, False]), ("id", "in", [c.id for c in customers])]),
     SO.search_count([("state", "=", "sale")]), env["dgt.case"].search_count([])))  # noqa: F821
 print("segmento Renove -> contactables: %d | sin consentimiento: %d | sin contacto: %d | ya renovados: %d" % (
     C.eligible_count, C.no_consent_count, C.no_contact_count, C.renewed_count))

@@ -20,18 +20,20 @@ class DgtWebhookEvent(models.Model):
     _description = "Evento de webhook DGT (outbox)"
     _order = "id desc"
 
-    event_id = fields.Char(default=lambda s: str(uuid.uuid4()), readonly=True, index=True)
-    event_type = fields.Char(required=True)
-    case_id = fields.Many2one("dgt.case", ondelete="cascade", index=True)
-    payload = fields.Json()
+    event_id = fields.Char(string="ID de evento", default=lambda s: str(uuid.uuid4()), readonly=True, index=True)
+    event_type = fields.Char(string="Evento", required=True)
+    case_id = fields.Many2one("dgt.case", string="Expediente", ondelete="cascade", index=True)
+    created_at = fields.Datetime(string="Creado", default=fields.Datetime.now, readonly=True)
+    payload = fields.Json(string="Contenido")
     state = fields.Selection(
         [("pending", "Pendiente"), ("sent", "Enviado"), ("failed", "Fallido")],
+        string="Estado",
         default="pending",
         index=True,
     )
-    attempts = fields.Integer(default=0)
-    last_error = fields.Char()
-    sent_date = fields.Datetime()
+    attempts = fields.Integer(string="Intentos", default=0)
+    last_error = fields.Char(string="Último error")
+    sent_date = fields.Datetime(string="Enviado el")
 
     @api.model
     def _target_url(self):

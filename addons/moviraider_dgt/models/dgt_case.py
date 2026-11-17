@@ -21,14 +21,15 @@ class DgtCase(models.Model):
             ("sent", "Enviado a gestoría"),
             ("cancel", "Cancelado"),
         ],
+        string="Estado",
         default="pending",
         required=True,
         tracking=True,
         index=True,
     )
-    sale_order_id = fields.Many2one("sale.order", required=True, ondelete="cascade", index=True)
-    sale_line_id = fields.Many2one("sale.order.line", ondelete="set null")
-    partner_id = fields.Many2one(related="sale_order_id.partner_id", store=True)
+    sale_order_id = fields.Many2one("sale.order", string="Pedido", required=True, ondelete="cascade", index=True)
+    sale_line_id = fields.Many2one("sale.order.line", string="Línea de pedido", ondelete="set null")
+    partner_id = fields.Many2one(related="sale_order_id.partner_id", string="Cliente", store=True)
     scooter_id = fields.Many2one(
         "product.product", string="Patinete", domain=[("is_scooter", "=", True)]
     )
@@ -39,18 +40,21 @@ class DgtCase(models.Model):
     consent_gestoria = fields.Boolean(
         string="Consentimiento para que la gestoría actúe en su nombre", tracking=True
     )
-    data_received_date = fields.Datetime(readonly=True)
+    data_received_date = fields.Datetime(string="Datos recibidos el", readonly=True)
 
     portal_url = fields.Char(compute="_compute_portal_url", string="Enlace para el cliente")
     days_open = fields.Integer(compute="_compute_days_open", string="Días abierto")
     is_stalled = fields.Boolean(compute="_compute_days_open", string="Parado")
 
-    @api.depends("create_date", "state", "data_received_date")
+    @api.depends("create_date", "write_date", "state")
     def _compute_days_open(self):
+        """Días abierto: cuenta hasta hoy mientras el expediente está vivo y se
+        congela (en la última escritura) cuando se envía o se cancela."""
         now = fields.Datetime.now()
         for case in self:
             start = case.create_date or now
-            case.days_open = max((now - start).days, 0)
+            end = (case.write_date or now) if case.state in ("sent", "cancel") else now
+            case.days_open = max((end - start).days, 0)
             case.is_stalled = case.state == "pending" and case.days_open >= 5
 
     def _compute_access_url(self):

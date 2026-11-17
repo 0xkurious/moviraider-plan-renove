@@ -5,7 +5,7 @@
         <field name="model">dgt.webhook.event</field>
         <field name="arch" type="xml">
             <list decoration-danger="state == 'failed'" decoration-success="state == 'sent'">
-                <field name="create_date"/>
+                <field name="created_at"/>
                 <field name="event_type"/>
                 <field name="case_id"/>
                 <field name="state" widget="badge"/>

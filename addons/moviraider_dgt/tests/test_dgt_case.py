@@ -120,3 +120,20 @@ class TestDgtCase(TransactionCase):
         order = self._order(self.scooter, self.pack)
         order.action_confirm()
         self.assertEqual(order.dgt_case_ids.days_open, 0)
+
+    def test_days_open_freezes_when_case_is_sent(self):
+        order = self._order(self.scooter, self.pack)
+        order.action_confirm()
+        case = order.dgt_case_ids
+        self._complete(case)
+        case.action_submit_data()
+        case.action_validate()
+        case.action_send_gestoria()
+        case.flush_recordset()  # el ORM difiere las escrituras: si no, pisarían nuestro write_date
+        self.env.cr.execute(
+            "UPDATE dgt_case SET create_date = now() - interval '10 days', "
+            "write_date = now() - interval '4 days' WHERE id = %s", (case.id,)
+        )
+        case.invalidate_recordset()
+        self.assertEqual(case.days_open, 6)  # 10 - 4: congelado en el cierre, no sigue contando
+        self.assertFalse(case.is_stalled)

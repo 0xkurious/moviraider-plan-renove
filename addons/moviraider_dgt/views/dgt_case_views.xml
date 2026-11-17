@@ -9,7 +9,7 @@
                 <field name="partner_id"/>
                 <field name="sale_order_id"/>
                 <field name="scooter_id"/>
-                <field name="days_open"/>
+                <field name="days_open" string="Días"/>
                 <field name="is_stalled" column_invisible="True"/>
                 <field name="state" widget="badge"/>
             </list>
