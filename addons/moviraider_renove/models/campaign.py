@@ -25,7 +25,7 @@ class RenoveCampaign(models.Model):
     )
     deadline = fields.Date(string="Fin del periodo transitorio", default=date(2027, 1, 22), required=True)
     days_left = fields.Integer(string="Días restantes", compute="_compute_days_left")
-    discount_code = fields.Char(string="Código de descuento", default="RENOVE27")
+    discount_code = fields.Char(string="Código de descuento", default="RENOVEDGT27")
     discount_percent = fields.Float(
         string="Descuento (%)", default=10.0,
         help="Se aplica solo a los patinetes del pedido (no al pack legal).",
