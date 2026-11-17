@@ -5,7 +5,7 @@
     "category": "Sales",
     "author": "Demo",
     "license": "LGPL-3",
-    "depends": ["sale"],
+    "depends": ["sale_management"],
     "data": ["views/product_views.xml"],
     "installable": True,
 }
