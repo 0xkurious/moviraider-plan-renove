@@ -157,6 +157,11 @@ for n, kind in enumerate(plan):
         env.cr.execute("UPDATE dgt_case SET write_date=%s WHERE id=%s", (closed, case.id))  # noqa: F821
         case.invalidate_recordset()
 
+# ------------------------------------------------ tienda web: publicar lo vigente
+(env["product.template"]  # noqa: F821
+    .search([("is_scooter", "=", True), ("has_dgt_certificate", "=", True)])
+    | pack.product_tmpl_id).write({"is_published": True, "website_published": True})
+
 # ------------------------------------------------------------------ campaña
 campaign = env["renove.campaign"].create({"name": "Plan Renove 2027"})  # noqa: F821
 campaign.action_compute_segment()
