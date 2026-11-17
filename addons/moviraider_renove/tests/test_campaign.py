@@ -125,7 +125,7 @@ class TestMailingAndAttribution(RenoveCommon, TransactionCase):
         cls._setup_catalog()
         cls.eva = cls._partner("Eva Contactable")
         cls._sale(cls.eva, cls.legacy, datetime(2023, 5, 10))
-        cls.campaign = cls.env["renove.campaign"].create({"name": "Test Attribution"})
+        cls.campaign = cls.env["renove.campaign"].create({"name": "Test Attribution", "discount_code": "TESTATTR"})
         cls.campaign.action_compute_segment()
 
     def test_prepare_mailing_targets_only_eligible(self):

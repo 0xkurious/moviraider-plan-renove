@@ -162,6 +162,15 @@ class RenoveCampaign(models.Model):
                 raise UserError(_("Indica el código de descuento de la campaña."))
             if not 0 < c.discount_percent <= 100:
                 raise UserError(_("El descuento debe estar entre 0 y 100 %."))
+            clash = self.env["loyalty.rule"].search(
+                [("code", "=", c.discount_code), ("program_id", "!=", c.loyalty_program_id.id)], limit=1
+            )
+            if clash:
+                raise UserError(_(
+                    "El código «%(code)s» ya lo usa la promoción «%(program)s». "
+                    "Cada campaña necesita un código distinto.",
+                    code=c.discount_code, program=clash.program_id.name,
+                ))
             program_vals = {
                 "name": c.name,
                 "program_type": "promo_code",

@@ -78,6 +78,13 @@ class TestDiscount(TransactionCase):
         apply_code(order, "TESTDTO10")
         self.assertAlmostEqual(order.amount_untaxed, 857.0)
 
+    def test_duplicate_code_gives_a_clear_error(self):
+        from odoo.exceptions import UserError
+        other = self.env["renove.campaign"].create({"name": "Otra", "discount_code": "TESTDTO10"})
+        with self.assertRaises(UserError) as ctx:
+            other._sync_loyalty_program()
+        self.assertIn("ya lo usa", str(ctx.exception))
+
     def test_invalid_percent_is_rejected(self):
         from odoo.exceptions import UserError
         with self.assertRaises(UserError):
