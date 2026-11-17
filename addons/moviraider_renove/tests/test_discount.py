@@ -116,7 +116,8 @@ class TestDiscount(TransactionCase):
         camp.action_prepare_mailing()
         self.assertTrue(camp.loyalty_program_id)
         self.assertIn("MAILDTO", camp.mailing_id.body_html)
-        self.assertIn("10 %", camp.mailing_id.body_html)
+        self.assertIn("en tu próxima compra", camp.mailing_id.body_html)
+        self.assertIn("10 % de descuento", camp.mailing_id.body_html)
 
 
 @tagged("post_install", "-at_install", "moviraider_renove")

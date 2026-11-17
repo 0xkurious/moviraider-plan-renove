@@ -88,12 +88,31 @@ class TestLanding(HttpCase):
     def test_homepage_shows_renove_hero(self):
         self.assertIn("Plan Renove", self.url_open("/").text)
 
+    def test_coupon_wording_on_landing_and_homepage(self):
+        self.env["renove.campaign"].search([("id", "!=", self.campaign.id), ("state", "=", "running")]).write({"state": "done"})
+        self.campaign.discount_code = "CUPONTEST"
+        self.campaign._sync_loyalty_program()
+        for url in ("/renove", "/"):
+            text = self.url_open(url).text
+            self.assertIn("CUPONTEST", text, url)
+            self.assertIn("en tu próxima compra", text, url)
+            self.assertIn("10 % de descuento", text, url)
+            self.assertIn("No incluye el pack legal", text, url)
+
     def test_january_22_clarification_matches_dgt_and_cites_source(self):
         text = self.url_open("/renove").text
         self.assertIn("21 de enero de 2024", text)   # fin de la comercialización sin certificado
         self.assertIn("22 de enero de 2027", text)   # fin del periodo transitorio
         self.assertIn("Vehículo no certificado", text)
         self.assertIn("dgt.es/nuestros-servicios/tu-vehiculo/vehiculos-de-movilidad-personal-vmp", text)
+
+    def test_dgt_origin_is_explicit_everywhere_it_matters(self):
+        """El mensaje debe dejar claro que es una norma de la DGT, no una promoción."""
+        self.assertIn("NORMATIVA DGT", self.url_open("/shop").text)          # barra superior
+        for url in ("/", "/renove"):
+            text = self.url_open(url).text
+            self.assertIn("Según la DGT", text, url)
+            self.assertIn("solo podrán circular", text, url)
 
     def test_announcement_bar_on_other_pages_but_not_on_landing(self):
         self.assertIn("rn-bar", self.url_open("/shop").text)

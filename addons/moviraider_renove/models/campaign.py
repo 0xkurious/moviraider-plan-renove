@@ -241,7 +241,8 @@ class RenoveCampaign(models.Model):
         return (
             "<p>Hola {{ object.name }},</p>"
             "<p>%s</p>"
-            "<p>Quedan <strong>%s días</strong>. Usa el código <strong>%s</strong> y llévate un <strong>%g %%</strong> en tu patinete.</p>"
+            "<p>Quedan <strong>%s días</strong>. Usa el código <strong>%s</strong> en tu próxima compra "
+            "y te hacemos un <strong>%g %% de descuento</strong>.</p>"
             '<p><a href="%s">Ver patinetes homologados</a></p>'
         ) % (self.offer_text, self.days_left, self.discount_code or "", self.discount_percent, shop)
 

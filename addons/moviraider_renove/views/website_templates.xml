@@ -32,10 +32,34 @@
             .rn-card.rn-warn { border-left: 5px solid #d9382b; }
             .rn-card.rn-good { border-left: 5px solid #1f9d55; }
             .rn-card.rn-info { border-left: 5px solid #ff5a1f; }
+            .rn-coupon { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 1rem;
+                         border: 2px dashed #ff5a1f; border-radius: 18px; background: #fff7f3; padding: 1.4rem 1.75rem; }
+            .rn-coupon .code { font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 1.9rem; font-weight: 800;
+                               letter-spacing: .12em; color: #111; background: #fff; border: 1px solid #ffd2bf;
+                               border-radius: 12px; padding: .35rem 1rem; }
             .rn-prod img { border-radius: 12px; background: #111; width: 100%; aspect-ratio: 1; object-fit: cover; }
             .rn-badge { position: absolute; top: .6rem; right: .6rem; background: #ff5a1f; color: #fff; font-size: .65rem;
                         font-weight: 800; padding: .2rem .5rem; border-radius: 6px; letter-spacing: .05em; }
         </style>
+    </template>
+
+    <!-- ============ Cupón (reutilizable) ============ -->
+    <template id="renove_coupon" name="Renove · cupón">
+        <div class="rn-coupon" t-if="c_pct">
+            <div>
+                <span class="rn-kicker mb-2">Tu cupón Plan Renove</span>
+                <div class="h3 fw-bold mb-1">
+                    Usa el código <span class="rn-orange" t-out="c_code"/> en tu próxima compra
+                    y te hacemos un <span class="rn-orange"><t t-out="'%g' % c_pct"/> % de descuento</span>.
+                </div>
+                <div class="text-muted small">Válido en patinetes homologados hasta el <t t-out="c_deadline"/>. No incluye el pack legal.</div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <span class="code" t-out="c_code"/>
+                <button type="button" class="rn-btn-ghost" t-att-data-code="c_code"
+                        onclick="if (navigator.clipboard) { navigator.clipboard.writeText(this.dataset.code); } this.textContent = 'Copiado ✓';">Copiar</button>
+            </div>
+        </div>
     </template>
 
     <!-- ============ Barra superior en todas las páginas ============ -->
@@ -45,8 +69,9 @@
             <t t-if="rn_campaign and request.httprequest.path != '/renove'">
                 <t t-call="moviraider_renove.renove_styles"/>
                 <div class="rn-bar">
-                    <strong class="rn-orange">PLAN RENOVE 2027</strong> · quedan <t t-out="rn_campaign.days_left"/> días ·
-                    <a href="/renove">Comprueba si tu patinete está al día →</a>
+                    <strong class="rn-orange">NORMATIVA DGT</strong> · desde el 22/01/2027 solo circulan patinetes certificados ·
+                    quedan <t t-out="rn_campaign.days_left"/> días ·
+                    <a href="/renove#aclaracion">Comprueba el tuyo →</a>
                 </div>
             </t>
         </xpath>
@@ -63,11 +88,16 @@
                 <div class="container py-5">
                     <div class="row align-items-center g-5">
                         <div class="col-lg-8">
-                            <span class="rn-kicker on-dark mb-3">Plan Renove 2027</span>
+                            <span class="rn-kicker on-dark mb-3">Normativa DGT · Plan Renove 2027</span>
                             <h1 class="display-4 fw-bold mb-3">¿Tu patinete <span class="rn-orange">sigue pudiendo circular?</span></h1>
-                            <p class="lead mb-4" style="color:#cfcfcf;">
+                            <p class="lead mb-2" style="color:#fff;">
+                                Según la DGT, desde el <strong>22 de enero de 2027</strong> solo podrán circular
+                                los patinetes con certificado.
+                            </p>
+                            <p class="mb-4" style="color:#cfcfcf;font-size:1.1rem;">
                                 Comprueba en diez segundos si tu modelo está al día. Si no lo está,
                                 trae tu patinete a tienda y lo revisamos gratis.
+                                <a href="/renove#aclaracion" class="text-white">Qué dice la DGT</a>
                             </p>
                             <a href="/renove" class="rn-btn btn-lg">Comprobar mi patinete →</a>
                             <a href="#homologados" class="ms-3 text-white">Ver homologados</a>
@@ -81,6 +111,14 @@
                         </div>
                     </div>
                 </div>
+            </section>
+
+            <section class="container pt-5" t-if="rn_campaign and rn_campaign.loyalty_program_id">
+                <t t-call="moviraider_renove.renove_coupon">
+                    <t t-set="c_code" t-value="rn_campaign.discount_code"/>
+                    <t t-set="c_pct" t-value="rn_campaign.discount_percent"/>
+                    <t t-set="c_deadline" t-value="rn_campaign.deadline.strftime('%d/%m/%Y')"/>
+                </t>
             </section>
 
             <section class="container py-5" id="homologados">
@@ -123,9 +161,13 @@
                     <div class="container py-5">
                         <div class="row align-items-center g-5">
                             <div class="col-lg-8">
-                                <span class="rn-kicker on-dark mb-3">Plan Renove 2027</span>
+                                <span class="rn-kicker on-dark mb-3">Normativa DGT · Plan Renove 2027</span>
                                 <h1 class="display-5 fw-bold mb-3">Tu patinete, <span class="rn-orange">¿sigue pudiendo circular?</span></h1>
-                                <p class="lead mb-4" style="color:#cfcfcf;max-width:46rem;">
+                                <p class="lead mb-2" style="color:#fff;max-width:46rem;">
+                                    Según la DGT, desde el <strong>22 de enero de 2027</strong> solo podrán circular
+                                    los patinetes con certificado.
+                                </p>
+                                <p class="mb-4" style="color:#cfcfcf;max-width:46rem;font-size:1.1rem;">
                                     Escribe la marca y el modelo. Te decimos si está al día y, si no, qué puedes hacer.
                                 </p>
                                 <form action="/renove" method="get" class="d-flex flex-column flex-md-row gap-2" style="max-width:46rem;">
@@ -182,8 +224,8 @@
                                 <div class="rn-card h-100 p-4">
                                     <h3 class="h5 fw-bold">Cámbialo por uno homologado</h3>
                                     <p t-if="discount_percent">
-                                        Con el código <strong t-out="discount_code"/> en la cesta:
-                                        <strong>−<t t-out="'%g' % discount_percent"/> %</strong> en tu patinete.
+                                        Usa el código <strong t-out="discount_code"/> en tu próxima compra y te hacemos
+                                        un <strong><t t-out="'%g' % discount_percent"/> % de descuento</strong>.
                                     </p>
                                     <p t-else="">Pregunta en tienda por las condiciones de renovación.</p>
                                     <a t-att-href="shop_url" class="rn-btn">Ver patinetes homologados</a>
@@ -197,6 +239,17 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                </section>
+
+                <!-- Cupón -->
+                <section class="container pt-4" t-if="discount_percent">
+                    <div style="max-width:64rem;margin:0 auto;">
+                        <t t-call="moviraider_renove.renove_coupon">
+                            <t t-set="c_code" t-value="discount_code"/>
+                            <t t-set="c_pct" t-value="discount_percent"/>
+                            <t t-set="c_deadline" t-value="deadline_text"/>
+                        </t>
                     </div>
                 </section>
 
