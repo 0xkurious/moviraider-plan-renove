@@ -22,16 +22,24 @@ services:
       - ./config/odoo.conf:/etc/odoo/odoo.conf:ro
       - odoo-data:/var/lib/odoo
 
-  mock-respondio:
+  # Adaptador Odoo -> proveedor de mensajería. Por defecto simula (PROVIDER=mock);
+  # con un .env real habla con respond.io. Ver docs/respondio-setup.md.
+  bridge:
     image: python:3.12-alpine
     command: python /app/server.py
+    working_dir: /app
+    env_file:
+      - path: .env
+        required: false
     environment:
-      FAIL_FIRST_N: "0"
+      FAIL_FIRST_N: "${FAIL_FIRST_N:-0}"
     ports:
       - "8001:8000"
     volumes:
-      - ./mock_respondio:/app:ro
+      - ./bridge:/app:ro
+      - bridge-data:/data
 
 volumes:
+  bridge-data:
   db-data:
   odoo-data:

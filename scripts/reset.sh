@@ -5,7 +5,7 @@ cd "$(dirname "$0")/.."
 
 echo "› Parando Odoo y recreando la base 'moviraider'…"
 docker compose stop odoo >/dev/null
-docker compose up -d db mock-respondio >/dev/null
+docker compose up -d db bridge >/dev/null
 until docker compose exec -T db pg_isready -U odoo >/dev/null 2>&1; do sleep 1; done
 docker compose exec -T db psql -U odoo -d postgres -qc "DROP DATABASE IF EXISTS moviraider"
 

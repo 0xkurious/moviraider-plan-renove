@@ -76,6 +76,30 @@ class TestWebhookOutbox(TransactionCase):
             self.event.action_retry()
         self.assertEqual(self.event.state, "sent")
 
+    def test_failure_detail_includes_the_provider_response(self):
+        resp = MagicMock(status_code=502, text="respond.io 401: invalid token")
+        err = requests.HTTPError("502 Server Error", response=resp)
+        bad = MagicMock()
+        bad.raise_for_status.side_effect = err
+        with patch.object(we.requests, "post", return_value=bad):
+            self.event._deliver()
+        self.assertIn("invalid token", self.event.last_error)  # el operador ve el motivo real
+        self.assertEqual(self.event.state, "pending")
+
+    def test_deliver_pending_skips_events_that_are_not_pending(self):
+        self.event.state = "sent"
+        with patch.object(we.requests, "post") as post:
+            self.event._deliver_pending()
+        post.assert_not_called()
+
+    def test_new_event_schedules_immediate_delivery_after_commit(self):
+        Event = self.env["dgt.webhook.event"]
+        with patch.object(type(Event), "_spawn_delivery") as spawn:
+            fresh = Event.create({"event_type": "case.created", "case_id": self.case.id, "payload": {}})
+            self.env.cr.postcommit.run()  # lo que Odoo hace tras el commit real
+        scheduled = [call.args[1] for call in spawn.call_args_list]
+        self.assertIn(fresh.ids, scheduled)  # (también arrastra los eventos creados en la preparación)
+
     def test_cron_only_picks_pending(self):
         self.event.state = "failed"
         with patch.object(we.requests, "post") as post:
