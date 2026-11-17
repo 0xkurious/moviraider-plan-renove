@@ -36,8 +36,8 @@ class RenoveCampaign(models.Model):
     )
     offer_text = fields.Text(
         string="Texto de la oferta",
-        default="A partir del 22 de enero de 2027 tu patinete ya no podrá circular. "
-        "Cámbialo por un modelo homologado con el descuento del Plan Renove.",
+        default="A partir del 22 de enero de 2027 solo podrán circular los patinetes con certificado. "
+        "Si el tuyo no lo tiene, cámbialo por un modelo homologado con el descuento del Plan Renove.",
     )
 
     utm_campaign_id = fields.Many2one("utm.campaign", string="Campaña UTM", readonly=True, copy=False)
