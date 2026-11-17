@@ -21,5 +21,7 @@ cat scripts/seed.py scripts/branding.py scripts/product_images.py | docker compo
 
 # Odoo cachea las plantillas web: reiniciar para que sirva lo que acaba de escribir el seed.
 docker compose restart odoo >/dev/null
+echo "› Esperando a que Odoo responda…"
+until [ "$(curl -s -o /dev/null -w '%{http_code}' http://localhost:8069/web/login)" = "200" ]; do sleep 2; done
 
 echo "✓ Listo: http://localhost:8069  (usuario: admin / contraseña: admin)"
