@@ -26,10 +26,18 @@ class RenoveCampaign(models.Model):
     deadline = fields.Date(string="Fin del periodo transitorio", default=date(2027, 1, 22), required=True)
     days_left = fields.Integer(string="Días restantes", compute="_compute_days_left")
     discount_code = fields.Char(string="Código de descuento", default="RENOVE27")
+    discount_percent = fields.Float(
+        string="Descuento (%)", default=10.0,
+        help="Se aplica solo a los patinetes del pedido (no al pack legal).",
+    )
+    loyalty_program_id = fields.Many2one(
+        "loyalty.program", string="Promoción en la tienda", readonly=True, copy=False, ondelete="set null",
+        help="Promoción de Odoo que hace que el código funcione en el carrito. Caduca con la campaña.",
+    )
     offer_text = fields.Text(
         string="Texto de la oferta",
         default="A partir del 22 de enero de 2027 tu patinete ya no podrá circular. "
-        "Cámbialo por un modelo homologado con un descuento exclusivo de cliente.",
+        "Cámbialo por un modelo homologado con el descuento del Plan Renove.",
     )
 
     utm_campaign_id = fields.Many2one("utm.campaign", string="Campaña UTM", readonly=True, copy=False)
@@ -42,6 +50,7 @@ class RenoveCampaign(models.Model):
     no_contact_count = fields.Integer(string="Sin vía de contacto", compute="_compute_funnel")
     renewed_count = fields.Integer(string="Ya renovados", compute="_compute_funnel")
     converted_count = fields.Integer(string="Han comprado", compute="_compute_funnel")
+    discount_total = fields.Monetary(string="Descuento concedido", compute="_compute_funnel", currency_field="currency_id")
     revenue = fields.Monetary(string="Ingresos atribuidos", compute="_compute_funnel", currency_field="currency_id")
     currency_id = fields.Many2one("res.currency", string="Moneda", default=lambda s: s.env.company.currency_id)
 
@@ -83,6 +92,8 @@ class RenoveCampaign(models.Model):
             orders = c._attributed_orders()
             c.converted_count = len(orders.partner_id)
             c.revenue = sum(orders.mapped("amount_untaxed"))
+            rewards = orders.order_line.filtered("is_reward_line")
+            c.discount_total = -sum(rewards.mapped("price_subtotal"))
 
     # --- Segmentación --------------------------------------------------
     def _segment(self):
@@ -140,6 +151,52 @@ class RenoveCampaign(models.Model):
             ]
             self.env["renove.campaign.line"].create(vals)
 
+    # --- Descuento real en la tienda --------------------------------------
+    def _sync_loyalty_program(self):
+        """Crea o actualiza la promoción de Odoo que respalda el código de la campaña.
+
+        La promoción caduca con la campaña (date_to = fin del periodo transitorio) y solo
+        rebaja patinetes: el pack legal es un trámite y no se descuenta."""
+        for c in self:
+            if not c.discount_code:
+                raise UserError(_("Indica el código de descuento de la campaña."))
+            if not 0 < c.discount_percent <= 100:
+                raise UserError(_("El descuento debe estar entre 0 y 100 %."))
+            program_vals = {
+                "name": c.name,
+                "program_type": "promo_code",
+                "trigger": "with_code",
+                "applies_on": "current",
+                "date_to": c.deadline,
+                "portal_visible": False,
+            }
+            rule_vals = {
+                "mode": "with_code", "code": c.discount_code,
+                "reward_point_mode": "order", "reward_point_amount": 1,
+            }
+            reward_vals = {
+                "reward_type": "discount", "discount_mode": "percent", "discount": c.discount_percent,
+                "discount_applicability": "specific",
+                "discount_product_domain": "[('is_scooter', '=', True)]",
+                "required_points": 1,
+                "description": _("%s %% en patinetes", ("%g" % c.discount_percent)),
+            }
+            program = c.loyalty_program_id
+            if program:
+                program.write(program_vals)
+                program.rule_ids[:1].write(rule_vals)
+                program.reward_ids[:1].write(reward_vals)
+            else:
+                c.loyalty_program_id = self.env["loyalty.program"].create(
+                    dict(program_vals, rule_ids=[(0, 0, rule_vals)], reward_ids=[(0, 0, reward_vals)])
+                )
+
+    def write(self, vals):
+        res = super().write(vals)
+        if {"discount_code", "discount_percent", "deadline", "name"} & set(vals):
+            self.filtered("loyalty_program_id")._sync_loyalty_program()
+        return res
+
     # --- Correo y atribución ---------------------------------------------
     def action_prepare_mailing(self):
         """Crea la campaña UTM y un correo en borrador dirigido al segmento contactable.
@@ -152,6 +209,7 @@ class RenoveCampaign(models.Model):
         eligible = self.line_ids.filtered(lambda l: l.status == "eligible").partner_id
         if not eligible:
             raise UserError(_("No hay clientes contactables en el segmento."))
+        self._sync_loyalty_program()  # el código del correo tiene que funcionar de verdad en la cesta
         if not self.utm_campaign_id:
             self.utm_campaign_id = self.env["utm.campaign"].create({"name": self.name})
         body = self._mailing_body()
@@ -174,9 +232,9 @@ class RenoveCampaign(models.Model):
         return (
             "<p>Hola {{ object.name }},</p>"
             "<p>%s</p>"
-            "<p>Quedan <strong>%s días</strong>. Usa el código <strong>%s</strong>.</p>"
+            "<p>Quedan <strong>%s días</strong>. Usa el código <strong>%s</strong> y llévate un <strong>%g %%</strong> en tu patinete.</p>"
             '<p><a href="%s">Ver patinetes homologados</a></p>'
-        ) % (self.offer_text, self.days_left, self.discount_code or "", shop)
+        ) % (self.offer_text, self.days_left, self.discount_code or "", self.discount_percent, shop)
 
     def action_view_orders(self):
         self.ensure_one()

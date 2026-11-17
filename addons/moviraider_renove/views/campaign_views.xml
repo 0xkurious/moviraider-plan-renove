@@ -32,11 +32,14 @@
                             <field name="request_count"/>
                             <field name="converted_count" string="Han comprado"/>
                             <field name="revenue"/>
+                            <field name="discount_total"/>
                             <field name="currency_id" invisible="1"/>
                         </group>
                     </group>
                     <group string="Oferta">
                         <field name="discount_code"/>
+                        <field name="discount_percent"/>
+                        <field name="loyalty_program_id"/>
                         <field name="offer_text"/>
                         <field name="utm_campaign_id"/>
                         <field name="mailing_id"/>

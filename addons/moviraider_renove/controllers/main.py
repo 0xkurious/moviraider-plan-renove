@@ -60,6 +60,7 @@ class RenoveWeb(http.Controller):
             "scooters": self._scooters(),
             "days_left": self._days_left(campaign),
             "discount_code": campaign.discount_code if campaign else "",
+            "discount_percent": campaign.discount_percent if campaign and campaign.loyalty_program_id else 0,
             "shop_url": shop_url,
             "stores": STORES,
             "error": None,

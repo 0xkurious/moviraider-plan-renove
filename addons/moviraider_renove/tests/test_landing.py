@@ -64,7 +64,7 @@ class TestLanding(HttpCase):
         req = self.env["renove.request"].search([("contact", "=", "ana@example.com")])
         self.assertEqual(len(req), 1)
         self.assertEqual(req.campaign_id, self.campaign)
-        self.assertEqual(req.product_tmpl_id, self.legacy.product_tmpl_id)
+        self.assertEqual(req.product_tmpl_id.name, self.legacy.name)  # por nombre: la base puede tener otro igual
         self.assertEqual(req.state, "new")
         self.campaign.invalidate_recordset()
         self.assertEqual(self.campaign.request_count, 1)

@@ -181,7 +181,11 @@
                             <div class="col-md-6">
                                 <div class="rn-card h-100 p-4">
                                     <h3 class="h5 fw-bold">Cámbialo por uno homologado</h3>
-                                    <p>Con el código <strong t-out="discount_code or 'RENOVE27'"/> en la cesta.</p>
+                                    <p t-if="discount_percent">
+                                        Con el código <strong t-out="discount_code"/> en la cesta:
+                                        <strong>−<t t-out="'%g' % discount_percent"/> %</strong> en tu patinete.
+                                    </p>
+                                    <p t-else="">Pregunta en tienda por las condiciones de renovación.</p>
                                     <a t-att-href="shop_url" class="rn-btn">Ver patinetes homologados</a>
                                 </div>
                             </div>
