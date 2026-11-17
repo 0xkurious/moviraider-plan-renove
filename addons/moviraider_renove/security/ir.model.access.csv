@@ -3,3 +3,5 @@ access_renove_campaign_user,renove.campaign user,model_renove_campaign,sales_tea
 access_renove_campaign_manager,renove.campaign manager,model_renove_campaign,sales_team.group_sale_manager,1,1,1,1
 access_renove_line_user,renove.campaign.line user,model_renove_campaign_line,sales_team.group_sale_salesman,1,0,0,0
 access_renove_line_manager,renove.campaign.line manager,model_renove_campaign_line,sales_team.group_sale_manager,1,1,1,1
+access_renove_request_user,renove.request user,model_renove_request,sales_team.group_sale_salesman,1,1,1,0
+access_renove_request_manager,renove.request manager,model_renove_request,sales_team.group_sale_manager,1,1,1,1

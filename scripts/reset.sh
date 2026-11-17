@@ -17,6 +17,9 @@ docker compose run --rm -T odoo odoo -d moviraider \
 echo "› Arrancando Odoo y cargando datos sintéticos…"
 docker compose up -d odoo >/dev/null
 sleep 8
-docker compose exec -T odoo odoo shell -d moviraider --no-http < scripts/seed.py 2>&1 | grep -vE "INFO|WARNING|^$"
+cat scripts/seed.py scripts/branding.py | docker compose exec -T odoo odoo shell -d moviraider --no-http 2>&1 | grep -vE "INFO|WARNING|^$"
+
+# Odoo cachea las plantillas web: reiniciar para que sirva lo que acaba de escribir el seed.
+docker compose restart odoo >/dev/null
 
 echo "✓ Listo: http://localhost:8069  (usuario: admin / contraseña: admin)"

@@ -29,6 +29,7 @@
                             <field name="no_consent_count" string="Sin consentimiento"/>
                             <field name="no_contact_count" string="Sin vía de contacto"/>
                             <field name="renewed_count" string="Ya renovados"/>
+                            <field name="request_count"/>
                             <field name="converted_count" string="Han comprado"/>
                             <field name="revenue"/>
                             <field name="currency_id" invisible="1"/>
@@ -81,6 +82,9 @@
         <field name="view_mode">list,form</field>
     </record>
 
-    <menuitem id="menu_renove_campaign" name="Campañas Renove"
-              parent="sale.sale_menu_root" action="renove_campaign_action" sequence="40"/>
+    <menuitem id="menu_renove_root" name="Renove" parent="sale.sale_menu_root" sequence="40"/>
+    <menuitem id="menu_renove_campaign" name="Campañas" parent="menu_renove_root"
+              action="renove_campaign_action" sequence="10"/>
+    <menuitem id="menu_renove_request" name="Solicitudes de visita" parent="menu_renove_root"
+              action="renove_request_action" sequence="20"/>
 </odoo>

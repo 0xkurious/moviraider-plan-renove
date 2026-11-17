@@ -162,6 +162,31 @@ for n, kind in enumerate(plan):
     .search([("is_scooter", "=", True), ("has_dgt_certificate", "=", True)])
     | pack.product_tmpl_id).write({"is_published": True, "website_published": True})
 
+# ------------------------------------------------ web de la demo: menú y marca neutra
+import base64  # noqa: E402
+
+site = env["website"].search([], limit=1)  # noqa: F821
+Menu = env["website.menu"]  # noqa: F821
+top = site.menu_id
+for m in top.child_id:
+    if m.url == "/shop":
+        m.name = "Patinetes"
+dropdown = Menu.create({"name": "Matrícula y seguro", "url": "#", "parent_id": top.id,
+                        "website_id": site.id, "sequence": 30})
+Menu.create({"name": "¿Caduca tu patinete?", "url": "/renove", "parent_id": dropdown.id,
+             "website_id": site.id, "sequence": 1})
+Menu.create({"name": "Pack legal DGT", "url": pack.product_tmpl_id.website_url or "/shop",
+             "parent_id": dropdown.id, "website_id": site.id, "sequence": 2})
+
+# Marca neutra de demo: solo texto, no se usa ningún logo de la empresa real.
+LOGO = (
+    '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="64" viewBox="0 0 320 64">'
+    '<text x="0" y="46" font-family="Helvetica, Arial, sans-serif" font-size="42" font-weight="800" '
+    'fill="#111" letter-spacing="1">MOVI<tspan fill="#ff5a1f">RAIDER</tspan></text>'
+    '<text x="232" y="60" font-family="Helvetica, Arial, sans-serif" font-size="11" fill="#888">demo</text></svg>'
+)
+site.logo = base64.b64encode(LOGO.encode())
+
 # ------------------------------------------------------------------ campaña
 campaign = env["renove.campaign"].create({"name": "Plan Renove 2027"})  # noqa: F821
 campaign.action_compute_segment()

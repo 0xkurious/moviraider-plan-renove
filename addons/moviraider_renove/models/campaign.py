@@ -36,6 +36,7 @@ class RenoveCampaign(models.Model):
     mailing_id = fields.Many2one("mailing.mailing", string="Correo", readonly=True, copy=False)
     line_ids = fields.One2many("renove.campaign.line", "campaign_id", string="Clientes")
 
+    request_count = fields.Integer(string="Solicitudes de visita", compute="_compute_request_count")
     eligible_count = fields.Integer(string="Contactables", compute="_compute_funnel")
     no_consent_count = fields.Integer(string="Sin consentimiento", compute="_compute_funnel")
     no_contact_count = fields.Integer(string="Sin vía de contacto", compute="_compute_funnel")
@@ -49,6 +50,16 @@ class RenoveCampaign(models.Model):
         today = fields.Date.context_today(self)
         for c in self:
             c.days_left = max((c.deadline - today).days, 0) if c.deadline else 0
+
+    @api.model
+    def get_active(self):
+        """Campaña en marcha que alimenta la web pública (la más reciente)."""
+        return self.search([("state", "=", "running")], order="id desc", limit=1)
+
+    def _compute_request_count(self):
+        Request = self.env["renove.request"]
+        for c in self:
+            c.request_count = Request.search_count([("campaign_id", "=", c.id)])
 
     # --- Embudo --------------------------------------------------------
     def _attributed_orders(self):

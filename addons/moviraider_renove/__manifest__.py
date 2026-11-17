@@ -5,10 +5,12 @@
     "category": "Marketing",
     "author": "Demo",
     "license": "LGPL-3",
-    "depends": ["moviraider_catalog", "sale", "mass_mailing", "utm"],
+    "depends": ["moviraider_catalog", "sale", "mass_mailing", "utm", "website"],
     "data": [
         "security/ir.model.access.csv",
+        "views/request_views.xml",
         "views/campaign_views.xml",
+        "views/website_templates.xml",
     ],
     "installable": True,
 }

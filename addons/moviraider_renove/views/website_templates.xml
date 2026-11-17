@@ -1,0 +1,167 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <!-- ============ Hero en la portada ============ -->
+    <template id="home_hero" inherit_id="website.homepage" name="Renove · hero de portada" priority="20">
+        <xpath expr="//div[@id='wrap']" position="inside">
+            <t t-set="renove_campaign" t-value="request.env['renove.campaign'].sudo().get_active()"/>
+            <section class="renove-hero text-white" style="background:#111;">
+                <div class="container py-5">
+                    <div class="row align-items-center g-4">
+                        <div class="col-lg-8">
+                            <p class="text-uppercase fw-bold mb-2" style="color:#ff5a1f;letter-spacing:.08em;">
+                                Plan Renove 2027
+                                <t t-if="renove_campaign"> · quedan <t t-out="renove_campaign.days_left"/> días</t>
+                            </p>
+                            <h1 class="display-4 fw-bold mb-3">¿Tu patinete sigue pudiendo circular?</h1>
+                            <p class="lead mb-4" style="color:#cfcfcf;">
+                                Comprueba en diez segundos si tu modelo está al día. Si no lo está,
+                                trae tu patinete a tienda y lo revisamos gratis.
+                            </p>
+                            <a href="/renove" class="btn btn-lg fw-bold px-4" style="background:#ff5a1f;color:#fff;">
+                                Comprobar mi patinete →
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </xpath>
+    </template>
+
+    <!-- ============ Landing /renove ============ -->
+    <template id="landing" name="Plan Renove · landing">
+        <t t-call="website.layout">
+            <div id="wrap" class="renove-landing">
+
+                <section class="text-white" style="background:#111;">
+                    <div class="container py-5">
+                        <p class="text-uppercase fw-bold mb-2" style="color:#ff5a1f;letter-spacing:.08em;">
+                            Plan Renove 2027 · quedan <t t-out="days_left"/> días
+                        </p>
+                        <h1 class="display-5 fw-bold mb-3">¿Tu patinete sigue pudiendo circular?</h1>
+                        <p class="lead mb-4" style="color:#cfcfcf;max-width:46rem;">
+                            Escribe la marca y el modelo. Te decimos si está al día y, si no, qué puedes hacer.
+                        </p>
+                        <form action="/renove" method="get" class="d-flex flex-column flex-md-row gap-2" style="max-width:46rem;">
+                            <input type="text" name="model" list="renove-models" class="form-control form-control-lg"
+                                   placeholder="Ej.: Kukirin G2 Pro" t-att-value="query" autocomplete="off"
+                                   aria-label="Marca y modelo de tu patinete"/>
+                            <datalist id="renove-models">
+                                <option t-foreach="scooters" t-as="s" t-att-value="s.name"/>
+                            </datalist>
+                            <button type="submit" class="btn btn-lg fw-bold px-4" style="background:#ff5a1f;color:#fff;">
+                                Comprobar
+                            </button>
+                        </form>
+                    </div>
+                </section>
+
+                <!-- Resultado -->
+                <section t-if="verdict" class="py-5" id="resultado">
+                    <div class="container" style="max-width:52rem;">
+                        <t t-if="verdict == 'expires'">
+                            <div class="alert alert-danger" role="alert">
+                                <h2 class="h4 alert-heading">
+                                    Tu <t t-out="template.name"/> deja de poder circular en <t t-out="days_left"/> días.
+                                </h2>
+                                <p class="mb-0">
+                                    Este modelo se vendió sin certificado de circulación. El periodo transitorio
+                                    termina el <strong>22 de enero de 2027</strong>.
+                                </p>
+                            </div>
+                        </t>
+                        <t t-elif="verdict == 'ok'">
+                            <div class="alert alert-success" role="alert">
+                                <h2 class="h4 alert-heading">Tu <t t-out="template.name"/> está al día.</h2>
+                                <p class="mb-0">Este modelo cuenta con certificado de circulación. Recuerda el registro en la DGT y el seguro obligatorio.</p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <div class="alert alert-warning" role="alert">
+                                <h2 class="h4 alert-heading">No reconocemos ese modelo.</h2>
+                                <p class="mb-0">No pasa nada: tráelo a una tienda y lo revisamos contigo, sin compromiso.</p>
+                            </div>
+                        </t>
+
+                        <div class="row g-3 mt-2" t-if="verdict != 'ok'">
+                            <div class="col-md-6">
+                                <div class="card h-100"><div class="card-body">
+                                    <h3 class="h5">Cámbialo por uno homologado</h3>
+                                    <p>Con el código <strong t-out="discount_code or 'RENOVE27'"/> en la cesta.</p>
+                                    <a t-att-href="shop_url" class="btn btn-primary">Ver patinetes homologados</a>
+                                </div></div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card h-100"><div class="card-body">
+                                    <h3 class="h5">Trae tu patinete</h3>
+                                    <p>Lo revisamos gratis en tienda y te contamos tus opciones.</p>
+                                    <a href="#reserva" class="btn btn-outline-dark">Reservar visita</a>
+                                </div></div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Reserva de visita -->
+                <section class="py-5 bg-light" id="reserva">
+                    <div class="container" style="max-width:40rem;">
+                        <t t-if="sent">
+                            <div class="alert alert-success" role="alert">
+                                <h2 class="h4 alert-heading">¡Recibido!</h2>
+                                <p class="mb-0">Te avisamos para confirmar la visita a <strong t-out="form.get('store')"/>.</p>
+                            </div>
+                        </t>
+                        <t t-else="">
+                            <h2 class="h3">Trae tu patinete</h2>
+                            <p class="text-muted">Lo revisamos gratis. Déjanos cómo avisarte.</p>
+                            <div t-if="error" class="alert alert-danger" role="alert" t-out="error"/>
+                            <form action="/renove/reserva" method="post">
+                                <input type="hidden" name="csrf_token" t-att-value="request.csrf_token()"/>
+                                <input type="hidden" name="model" t-att-value="query"/>
+                                <div class="mb-3">
+                                    <label class="form-label" for="r-name">Nombre</label>
+                                    <input class="form-control" id="r-name" name="name" required="required" t-att-value="form.get('name', '')"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="r-contact">Teléfono o email</label>
+                                    <input class="form-control" id="r-contact" name="contact" required="required" t-att-value="form.get('contact', '')"/>
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label" for="r-store">Tienda</label>
+                                    <select class="form-select" id="r-store" name="store" required="required">
+                                        <option value="">Elige una tienda…</option>
+                                        <option t-foreach="stores" t-as="st" t-att-value="st"
+                                                t-att-selected="st == form.get('store')" t-out="st"/>
+                                    </select>
+                                </div>
+                                <div class="form-check mb-3">
+                                    <input class="form-check-input" type="checkbox" id="r-consent" name="consent" required="required"/>
+                                    <label class="form-check-label" for="r-consent">
+                                        Acepto que me contacten para concertar la visita.
+                                    </label>
+                                </div>
+                                <button type="submit" class="btn btn-primary">Reservar visita</button>
+                            </form>
+                        </t>
+                    </div>
+                </section>
+
+                <!-- Información -->
+                <section class="py-5">
+                    <div class="container" style="max-width:52rem;">
+                        <h2 class="h3 mb-3">Qué cambia el 22 de enero de 2027</h2>
+                        <p>
+                            Los patinetes vendidos antes de 2024 sin certificado de circulación tienen un periodo
+                            transitorio. Cuando termine, solo podrán circular los que cuenten con certificado,
+                            estén registrados en la DGT y lleven su seguro de responsabilidad civil.
+                        </p>
+                        <ul>
+                            <li><strong>Con certificado:</strong> te ayudamos con el registro y la matrícula.</li>
+                            <li><strong>Sin certificado:</strong> revisamos tu caso y te proponemos un modelo homologado.</li>
+                        </ul>
+                        <p class="small text-muted mb-0">Página de demostración. Los datos legales son orientativos.</p>
+                    </div>
+                </section>
+            </div>
+        </t>
+    </template>
+</odoo>

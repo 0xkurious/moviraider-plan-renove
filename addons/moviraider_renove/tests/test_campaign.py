@@ -83,11 +83,19 @@ class TestSegmentation(RenoveCommon, TransactionCase):
         self.assertEqual(line.legacy_product_ids, self.legacy | self.legacy2)
         self.assertEqual(line.last_legacy_date, date(2023, 5, 10))
 
+    def _mine(self):
+        """Solo los clientes creados por este test: el resultado no depende de
+        que la base tenga ya otros datos (p. ej. el seed de la demo)."""
+        mine = (self.ok | self.two | self.renewed | self.no_consent | self.no_email
+                | self.had_cert | self.bought_modern | self.draft_only)
+        return self.campaign.line_ids.filtered(lambda l: l.partner_id in mine)
+
     def test_funnel_counts(self):
-        c = self.campaign
+        counts = {}
+        for line in self._mine():
+            counts[line.status] = counts.get(line.status, 0) + 1
         self.assertEqual(
-            (c.eligible_count, c.no_consent_count, c.no_contact_count, c.renewed_count),
-            (2, 1, 1, 1),
+            counts, {"eligible": 2, "no_consent": 1, "no_contact": 1, "renewed": 1}
         )
 
     def test_recompute_is_idempotent(self):
@@ -96,9 +104,10 @@ class TestSegmentation(RenoveCommon, TransactionCase):
         self.assertEqual(len(self.campaign.line_ids), before)
 
     def test_cutoff_is_configurable(self):
-        self.campaign.cutoff_date = date(2023, 1, 1)  # solo la compra de 2022 cuenta
+        self.campaign.cutoff_date = date(2023, 1, 1)  # solo cuentan compras de 2022 o antes
         self.campaign.action_compute_segment()
-        self.assertEqual(self.campaign.line_ids.partner_id, self.two)
+        partners = self._mine().partner_id
+        self.assertEqual(partners, self.two)  # la única con una compra de 2022
 
     def test_days_left(self):
         today = date.today()

@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="renove_request_view_list" model="ir.ui.view">
+        <field name="name">renove.request.list</field>
+        <field name="model">renove.request</field>
+        <field name="arch" type="xml">
+            <list decoration-success="state == 'done'" decoration-muted="state == 'done'" decoration-bf="state == 'new'">
+                <field name="created_at"/>
+                <field name="name"/>
+                <field name="contact"/>
+                <field name="model_text"/>
+                <field name="product_tmpl_id" optional="hide"/>
+                <field name="store"/>
+                <field name="state" widget="badge"/>
+            </list>
+        </field>
+    </record>
+
+    <record id="renove_request_view_form" model="ir.ui.view">
+        <field name="name">renove.request.form</field>
+        <field name="model">renove.request</field>
+        <field name="arch" type="xml">
+            <form>
+                <header>
+                    <button name="action_contacted" string="Marcar contactada" type="object" class="btn-primary"
+                            invisible="state != 'new'"/>
+                    <button name="action_done" string="Marcar atendida" type="object"
+                            invisible="state == 'done'"/>
+                    <field name="state" widget="statusbar"/>
+                </header>
+                <sheet>
+                    <group>
+                        <group>
+                            <field name="name"/>
+                            <field name="contact"/>
+                            <field name="consent"/>
+                        </group>
+                        <group>
+                            <field name="model_text"/>
+                            <field name="product_tmpl_id"/>
+                            <field name="store"/>
+                            <field name="campaign_id"/>
+                            <field name="created_at"/>
+                        </group>
+                    </group>
+                </sheet>
+            </form>
+        </field>
+    </record>
+
+    <record id="renove_request_action" model="ir.actions.act_window">
+        <field name="name">Solicitudes de visita</field>
+        <field name="res_model">renove.request</field>
+        <field name="view_mode">list,form</field>
+    </record>
+</odoo>
