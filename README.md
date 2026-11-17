@@ -9,7 +9,7 @@ Demo técnica para el departamento de tecnología de MoviRaider, construida como
 - **Fricción 1.** El pack legal (57 €) arranca *después* de entregar el patinete: la propia web dice «cuando lo recibas, te escribimos para pedirte los datos del trámite». Mientras tanto el patinete no puede circular y depende de que alguien escriba.
 - **Oportunidad.** El **22 de enero de 2027** termina el periodo transitorio para los patinetes vendidos antes de 2024 sin certificado (DGT). Los clientes que compraron esos patinetes están en su Odoo.
 - **Qué hice.** Un expediente DGT que nace con el pedido y avisa al cliente por webhook; una campaña de renovación con cupón real y atribución de ventas; y una web pública con un comprobador («¿mi patinete sigue pudiendo circular?»).
-- **Cómo se prueba.** Un comando levanta todo con datos de ejemplo; 65 pruebas automáticas cubren la lógica.
+- **Cómo se prueba.** Dos comandos levantan todo con datos de ejemplo (sección 7); 65 pruebas automáticas cubren la lógica.
 
 ![Portada con el hero del Plan Renove](docs/walkthrough/12_portada_con_hero.png)
 
